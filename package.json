@@ -1,0 +1,14 @@
+{
+  "name": "stroop-brain-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "腦筋急轉色－繁體中文 Stroop 認知挑戰遊戲",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "npm test && node scripts/validate-html.js",
+    "test:e2e": "node scripts/e2e.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
