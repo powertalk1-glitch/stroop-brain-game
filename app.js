@@ -26,6 +26,7 @@
     state.profile = profile;
     document.body.className = `profile-${profile}`;
     $('profile-label').textContent = labels.profile[profile];
+    updateSetup();
     showScreen('setup');
   }
 
@@ -37,9 +38,11 @@
 
   function updateSetup() {
     $('rule-summary').textContent = ruleDescriptions[state.mode];
-    const config = E.getRoundConfig(state.profile, state.difficulty);
-    const selected = document.querySelector(`[data-difficulty="${state.difficulty}"] small`);
-    if (selected) selected.textContent = `${config.optionCount} 選項・${config.questionMs / 1000} 秒`;
+    ['easy', 'normal', 'hard'].forEach((difficulty) => {
+      const config = E.getRoundConfig(state.profile, difficulty);
+      const description = document.querySelector(`[data-difficulty="${difficulty}"] small`);
+      if (description) description.textContent = `${config.optionCount} 選項・${config.questionMs / 1000} 秒`;
+    });
   }
 
   function ensureAudio() {

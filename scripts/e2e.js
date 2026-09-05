@@ -10,6 +10,9 @@ const assert = require('node:assert/strict');
   assert.equal(await page.title(), '腦筋急轉色｜色字反應挑戰');
   assert.equal(await page.locator('#pause-overlay').evaluate((el) => getComputedStyle(el).display), 'none');
 
+  await page.click('[data-profile="senior"]');
+  assert.ok((await page.locator('[data-difficulty="easy"] small').textContent()).includes('7 秒'));
+  await page.click('#back-home');
   await page.click('[data-profile="child"]');
   await page.click('[data-mode="mixed"]');
   await page.click('[data-difficulty="hard"]');
