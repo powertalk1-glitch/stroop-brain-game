@@ -4,13 +4,13 @@
   const $ = (id) => document.getElementById(id);
   const screens = ['home', 'setup', 'game', 'result'];
   const labels = {
-    profile: { adult: '成人挑戰', child: '兒童模式', senior: '長輩模式' },
-    mode: { ink: '看字色', word: '看字義', mixed: '混合指令' },
+    profile: { adult: '成人挑戰' },
+    mode: { mixed: '混合指令' },
     difficulty: { easy: '簡單', normal: '普通', hard: '困難' }
   };
-  const ruleDescriptions = { ink: '只看字體呈現的顏色', word: '只看文字寫的是什麼', mixed: '每題先看「字色」或「字義」指令' };
+  const ruleDescriptions = { mixed: '每題先看「字色」或「字義」指令' };
   const state = {
-    profile: 'adult', mode: 'ink', difficulty: 'easy', sound: true,
+    profile: 'adult', mode: 'mixed', difficulty: 'easy', sound: true,
     playing: false, paused: false, locked: false, started: false,
     score: 0, streak: 0, correct: 0, wrong: 0, totalReactionMs: 0, maxStreak: 0,
     roundEnd: 0, questionStart: 0, pauseStart: 0,
@@ -22,13 +22,6 @@
     window.scrollTo(0, 0);
   }
 
-  function setProfile(profile) {
-    state.profile = profile;
-    document.body.className = `profile-${profile}`;
-    $('profile-label').textContent = labels.profile[profile];
-    updateSetup();
-    showScreen('setup');
-  }
 
   function selectChoice(groupId, attribute, value) {
     document.querySelectorAll(`#${groupId} [data-${attribute}]`).forEach((button) => {
@@ -121,7 +114,8 @@
     const word = $('prompt-word');
     word.textContent = question.word.label;
     word.style.color = question.ink.hex;
-    word.classList.toggle('dark-ink', question.ink.id === 'black');
+    word.classList.toggle('dark-ink', ['black', 'blue', 'green', 'red'].includes(question.ink.id));
+    word.classList.toggle('light-ink', ['white', 'yellow'].includes(question.ink.id));
     word.style.transform = 'scale(.96)';
     requestAnimationFrame(() => { word.style.transform = 'scale(1)'; });
     const answers = $('answers');
@@ -204,8 +198,7 @@
     showScreen('result');
   }
 
-  document.querySelectorAll('[data-profile]').forEach((button) => button.addEventListener('click', () => setProfile(button.dataset.profile)));
-  $('mode-choices').addEventListener('click', (event) => { const button = event.target.closest('[data-mode]'); if (!button) return; state.mode = button.dataset.mode; selectChoice('mode-choices', 'mode', state.mode); updateSetup(); });
+  $('enter-setup').addEventListener('click', () => showScreen('setup'));
   $('difficulty-choices').addEventListener('click', (event) => { const button = event.target.closest('[data-difficulty]'); if (!button) return; state.difficulty = button.dataset.difficulty; selectChoice('difficulty-choices', 'difficulty', state.difficulty); updateSetup(); });
   $('back-home').addEventListener('click', () => showScreen('home'));
   $('start-game').addEventListener('click', startGame);
