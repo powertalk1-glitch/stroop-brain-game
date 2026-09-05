@@ -13,21 +13,21 @@
   ]);
 
   const DIFFICULTIES = Object.freeze({
-    easy: Object.freeze({ optionCount: 2, questionMs: 5000, conflictRate: 0.5 }),
-    normal: Object.freeze({ optionCount: 4, questionMs: 3000, conflictRate: 0.78 }),
-    hard: Object.freeze({ optionCount: 4, questionMs: 2000, conflictRate: 0.96 })
+    easy: Object.freeze({ optionCount: 4, speedReferenceMs: 5000, feedbackMs: 520 }),
+    normal: Object.freeze({ optionCount: 4, speedReferenceMs: 3500, feedbackMs: 360 }),
+    hard: Object.freeze({ optionCount: 4, speedReferenceMs: 2200, feedbackMs: 220 })
   });
 
-  const TIME_ADJUSTMENTS = Object.freeze({ adult: 0, child: 1000, senior: 2000 });
+  const SPEED_ADJUSTMENTS = Object.freeze({ adult: 0, child: 1000, senior: 2000 });
 
   function getRoundConfig(profile, difficulty) {
     const base = DIFFICULTIES[difficulty];
     if (!base) throw new Error('未知難度');
-    if (!(profile in TIME_ADJUSTMENTS)) throw new Error('未知玩家模式');
+    if (!(profile in SPEED_ADJUSTMENTS)) throw new Error('未知玩家模式');
     return {
       optionCount: base.optionCount,
-      questionMs: base.questionMs + TIME_ADJUSTMENTS[profile],
-      conflictRate: base.conflictRate
+      speedReferenceMs: base.speedReferenceMs + SPEED_ADJUSTMENTS[profile],
+      feedbackMs: base.feedbackMs
     };
   }
 
@@ -42,25 +42,13 @@
 
     const rule = mode === 'mixed' ? (rng() < 0.5 ? 'ink' : 'word') : mode;
     const word = COLORS[pickIndex(rng, COLORS.length)];
-    const conflict = rng() < config.conflictRate;
-    let ink = word;
-    if (conflict) {
-      const alternatives = COLORS.filter((color) => color.id !== word.id);
-      ink = alternatives[pickIndex(rng, alternatives.length)];
-    }
+    const alternatives = COLORS.filter((color) => color.id !== word.id);
+    const ink = alternatives[pickIndex(rng, alternatives.length)];
 
     const answer = rule === 'ink' ? ink.id : word.id;
-    let options;
-    if (config.optionCount === COLORS.length) {
-      options = COLORS.slice();
-    } else {
-      const answerColor = COLORS.find((color) => color.id === answer);
-      const distractors = COLORS.filter((color) => color.id !== answer);
-      const distractor = distractors[pickIndex(rng, distractors.length)];
-      options = COLORS.filter((color) => color.id === answerColor.id || color.id === distractor.id);
-    }
+    const options = COLORS.slice();
 
-    return { rule, word, ink, answer, options, conflict };
+    return { rule, word, ink, answer, options, conflict: true };
   }
 
   function scoreAnswer(state, isCorrect, reactionMs, questionMs) {

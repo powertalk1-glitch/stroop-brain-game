@@ -13,7 +13,7 @@
     profile: 'adult', mode: 'ink', difficulty: 'easy', sound: true,
     playing: false, paused: false, locked: false, started: false,
     score: 0, streak: 0, correct: 0, wrong: 0, totalReactionMs: 0, maxStreak: 0,
-    roundEnd: 0, questionEnd: 0, questionStart: 0, pauseStart: 0,
+    roundEnd: 0, questionStart: 0, pauseStart: 0,
     current: null, nextAt: 0, frame: 0, audio: null
   };
 
@@ -38,10 +38,10 @@
 
   function updateSetup() {
     $('rule-summary').textContent = ruleDescriptions[state.mode];
+    const paceLabels = { easy: '舒適節奏', normal: '標準節奏', hard: '疾速節奏' };
     ['easy', 'normal', 'hard'].forEach((difficulty) => {
-      const config = E.getRoundConfig(state.profile, difficulty);
       const description = document.querySelector(`[data-difficulty="${difficulty}"] small`);
-      if (description) description.textContent = `${config.optionCount} 選項・${config.questionMs / 1000} 秒`;
+      if (description) description.textContent = `四色常駐・${paceLabels[difficulty]}`;
     });
   }
 
@@ -115,7 +115,6 @@
     const config = E.getRoundConfig(state.profile, state.difficulty);
     state.current = E.createQuestion(state.mode, state.difficulty);
     state.questionStart = now;
-    state.questionEnd = now + config.questionMs;
     state.locked = false; state.nextAt = 0;
     const question = state.current;
     $('rule-badge').textContent = question.rule === 'ink' ? '看字色' : '看字義';
@@ -125,7 +124,7 @@
     word.style.transform = 'scale(.96)';
     requestAnimationFrame(() => { word.style.transform = 'scale(1)'; });
     const answers = $('answers');
-    answers.className = `answers${question.options.length === 2 ? ' two' : ''}`;
+    answers.className = 'answers';
     answers.replaceChildren(...question.options.map((color) => {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'answer'; button.dataset.answer = color.id;
@@ -144,7 +143,7 @@
     const config = E.getRoundConfig(state.profile, state.difficulty);
     const correct = id === state.current.answer;
     state.locked = true;
-    const updated = E.scoreAnswer(state, correct, now - state.questionStart, config.questionMs);
+    const updated = E.scoreAnswer(state, correct, now - state.questionStart, config.speedReferenceMs);
     Object.assign(state, updated);
     document.querySelectorAll('.answer').forEach((item) => {
       item.disabled = true;
@@ -157,7 +156,7 @@
     flash.className = `flash show ${correct ? 'good' : 'bad'}`;
     flash.textContent = correct ? (state.streak >= 3 ? `${state.streak} 連擊` : '答對') : '再專心一點';
     beep(correct ? 'good' : 'bad');
-    state.nextAt = now + 360;
+    state.nextAt = now + config.feedbackMs;
   }
 
   function tick(now) {
@@ -167,19 +166,6 @@
       $('round-bar').style.transform = `scaleX(${roundRemaining / 60000})`;
       if (roundRemaining <= 0) { finishGame(); return; }
       if (state.locked && state.nextAt && now >= state.nextAt) nextQuestion(now);
-      if (!state.locked && state.current) {
-        const config = E.getRoundConfig(state.profile, state.difficulty);
-        const questionRemaining = Math.max(0, state.questionEnd - now);
-        $('question-bar').style.transform = `scaleX(${questionRemaining / config.questionMs})`;
-        if (questionRemaining <= 0) {
-          state.locked = true;
-          Object.assign(state, E.scoreAnswer(state, false, config.questionMs, config.questionMs));
-          $('streak').textContent = '0';
-          document.querySelectorAll('.answer').forEach((item) => { item.disabled = true; if (item.dataset.answer === state.current.answer) item.classList.add('correct'); });
-          const flash = $('flash'); flash.className = 'flash show bad'; flash.textContent = '時間到'; beep('bad');
-          state.nextAt = now + 480;
-        }
-      }
     }
     state.frame = requestAnimationFrame(tick);
   }
@@ -199,7 +185,6 @@
       const now = performance.now();
       const pausedDuration = now - state.pauseStart;
       state.roundEnd += pausedDuration;
-      state.questionEnd += pausedDuration;
       state.questionStart += pausedDuration;
       state.pauseStart = 0; state.paused = false;
     });

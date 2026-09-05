@@ -11,7 +11,7 @@ const assert = require('node:assert/strict');
   assert.equal(await page.locator('#pause-overlay').evaluate((el) => getComputedStyle(el).display), 'none');
 
   await page.click('[data-profile="senior"]');
-  assert.ok((await page.locator('[data-difficulty="easy"] small').textContent()).includes('7 秒'));
+  assert.ok((await page.locator('[data-difficulty="easy"] small').textContent()).includes('四色常駐'));
   await page.click('#back-home');
   await page.click('[data-profile="child"]');
   await page.click('[data-mode="mixed"]');
@@ -21,6 +21,11 @@ const assert = require('node:assert/strict');
   await page.waitForTimeout(3000);
   assert.ok(await page.locator('#game-screen').evaluate((el) => el.classList.contains('active')));
   assert.equal(await page.locator('.answer').count(), 4);
+  assert.equal(await page.locator('#question-bar').count(), 0);
+  const promptBeforeWait = await page.locator('#prompt-word').textContent();
+  await page.waitForTimeout(5500);
+  assert.equal(await page.locator('#prompt-word').textContent(), promptBeforeWait);
+  assert.equal(await page.locator('.answer:not(:disabled)').count(), 4);
 
   const answerId = await page.evaluate(() => {
     const rule = document.querySelector('#rule-badge').textContent;

@@ -7,11 +7,15 @@ const rngFrom = (...values) => {
   return () => values[index++ % values.length];
 };
 
-test('難度與玩家模式會共同決定選項數和答題時間', () => {
-  assert.deepEqual(Engine.getRoundConfig('adult', 'easy'), { optionCount: 2, questionMs: 5000, conflictRate: 0.5 });
-  assert.equal(Engine.getRoundConfig('child', 'hard').questionMs, 3000);
-  assert.equal(Engine.getRoundConfig('senior', 'hard').questionMs, 4000);
-  assert.equal(Engine.getRoundConfig('adult', 'normal').optionCount, 4);
+test('所有難度常駐四色選項且沒有單題截止時間', () => {
+  for (const profile of ['adult', 'child', 'senior']) {
+    for (const difficulty of ['easy', 'normal', 'hard']) {
+      const config = Engine.getRoundConfig(profile, difficulty);
+      assert.equal(config.optionCount, 4);
+      assert.equal('questionMs' in config, false);
+      assert.ok(config.speedReferenceMs > 0);
+    }
+  }
 });
 
 test('字體顏色模式以墨色作答，且選項必定包含答案', () => {
@@ -26,7 +30,7 @@ test('文字字義模式以文字內容作答', () => {
   const q = Engine.createQuestion('word', 'easy', rngFrom(0, 0.8, 0.4, 0.6));
   assert.equal(q.rule, 'word');
   assert.equal(q.answer, q.word.id);
-  assert.equal(q.options.length, 2);
+  assert.equal(q.options.length, 4);
 });
 
 test('混合模式可以在字色與字義規則間切換', () => {
@@ -36,11 +40,16 @@ test('混合模式可以在字色與字義規則間切換', () => {
   assert.equal(wordQuestion.rule, 'word');
 });
 
-test('普通與困難題會依設定提高色字衝突機率', () => {
-  const normal = Engine.getRoundConfig('adult', 'normal');
-  const hard = Engine.getRoundConfig('adult', 'hard');
-  assert.ok(normal.conflictRate > Engine.getRoundConfig('adult', 'easy').conflictRate);
-  assert.ok(hard.conflictRate > normal.conflictRate);
+test('所有題目的文字字義與字體顏色強制不同', () => {
+  for (const mode of ['ink', 'word', 'mixed']) {
+    for (const difficulty of ['easy', 'normal', 'hard']) {
+      for (let i = 0; i < 20; i += 1) {
+        const q = Engine.createQuestion(mode, difficulty);
+        assert.notEqual(q.word.id, q.ink.id);
+        assert.equal(q.conflict, true);
+      }
+    }
+  }
 });
 
 test('答對可得基礎、速度與連擊分；答錯不扣分但連擊歸零', () => {
