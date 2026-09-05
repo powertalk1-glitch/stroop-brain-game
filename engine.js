@@ -10,8 +10,8 @@
     Object.freeze({ id: 'yellow', label: '黃', hex: '#f2bd2e' }),
     Object.freeze({ id: 'blue', label: '藍', hex: '#2878ff' }),
     Object.freeze({ id: 'green', label: '綠', hex: '#159b68' }),
-    Object.freeze({ id: 'orange', label: '橘', hex: '#ef7f2d' }),
-    Object.freeze({ id: 'purple', label: '紫', hex: '#8b5cf6' })
+    Object.freeze({ id: 'black', label: '黑', hex: '#111827' }),
+    Object.freeze({ id: 'white', label: '白', hex: '#ffffff' })
   ]);
 
   const DIFFICULTIES = Object.freeze({

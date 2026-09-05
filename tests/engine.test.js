@@ -8,7 +8,7 @@ const rngFrom = (...values) => {
 };
 
 test('所有難度常駐六色選項且沒有單題截止時間', () => {
-  assert.deepEqual(Engine.COLORS.map((color) => color.id), ['red', 'yellow', 'blue', 'green', 'orange', 'purple']);
+  assert.deepEqual(Engine.COLORS.map((color) => color.id), ['red', 'yellow', 'blue', 'green', 'black', 'white']);
   for (const profile of ['adult', 'child', 'senior']) {
     for (const difficulty of ['easy', 'normal', 'hard']) {
       const config = Engine.getRoundConfig(profile, difficulty);

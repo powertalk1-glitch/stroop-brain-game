@@ -121,6 +121,7 @@
     const word = $('prompt-word');
     word.textContent = question.word.label;
     word.style.color = question.ink.hex;
+    word.classList.toggle('dark-ink', question.ink.id === 'black');
     word.style.transform = 'scale(.96)';
     requestAnimationFrame(() => { word.style.transform = 'scale(1)'; });
     const answers = $('answers');

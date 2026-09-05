@@ -30,8 +30,8 @@ const assert = require('node:assert/strict');
   const answerId = await page.evaluate(() => {
     const rule = document.querySelector('#rule-badge').textContent;
     const word = document.querySelector('#prompt-word');
-    const wordIds = { '紅': 'red', '黃': 'yellow', '藍': 'blue', '綠': 'green', '橘': 'orange', '紫': 'purple' };
-    const colorIds = { 'rgb(229, 72, 77)': 'red', 'rgb(242, 189, 46)': 'yellow', 'rgb(40, 120, 255)': 'blue', 'rgb(21, 155, 104)': 'green', 'rgb(239, 127, 45)': 'orange', 'rgb(139, 92, 246)': 'purple' };
+    const wordIds = { '紅': 'red', '黃': 'yellow', '藍': 'blue', '綠': 'green', '黑': 'black', '白': 'white' };
+    const colorIds = { 'rgb(229, 72, 77)': 'red', 'rgb(242, 189, 46)': 'yellow', 'rgb(40, 120, 255)': 'blue', 'rgb(21, 155, 104)': 'green', 'rgb(17, 24, 39)': 'black', 'rgb(255, 255, 255)': 'white' };
     return rule === '看字義' ? wordIds[word.textContent] : colorIds[getComputedStyle(word).color];
   });
   await page.click(`[data-answer="${answerId}"]`);
