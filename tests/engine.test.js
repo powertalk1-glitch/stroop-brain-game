@@ -7,11 +7,12 @@ const rngFrom = (...values) => {
   return () => values[index++ % values.length];
 };
 
-test('所有難度常駐四色選項且沒有單題截止時間', () => {
+test('所有難度常駐六色選項且沒有單題截止時間', () => {
+  assert.deepEqual(Engine.COLORS.map((color) => color.id), ['red', 'yellow', 'blue', 'green', 'orange', 'purple']);
   for (const profile of ['adult', 'child', 'senior']) {
     for (const difficulty of ['easy', 'normal', 'hard']) {
       const config = Engine.getRoundConfig(profile, difficulty);
-      assert.equal(config.optionCount, 4);
+      assert.equal(config.optionCount, 6);
       assert.equal('questionMs' in config, false);
       assert.ok(config.speedReferenceMs > 0);
     }
@@ -23,14 +24,14 @@ test('字體顏色模式以墨色作答，且選項必定包含答案', () => {
   assert.equal(q.rule, 'ink');
   assert.equal(q.answer, q.ink.id);
   assert.ok(q.options.some((option) => option.id === q.answer));
-  assert.equal(q.options.length, 4);
+  assert.equal(q.options.length, 6);
 });
 
 test('文字字義模式以文字內容作答', () => {
   const q = Engine.createQuestion('word', 'easy', rngFrom(0, 0.8, 0.4, 0.6));
   assert.equal(q.rule, 'word');
   assert.equal(q.answer, q.word.id);
-  assert.equal(q.options.length, 4);
+  assert.equal(q.options.length, 6);
 });
 
 test('混合模式可以在字色與字義規則間切換', () => {
@@ -52,6 +53,18 @@ test('所有題目的文字字義與字體顏色強制不同', () => {
   }
 });
 
+test('即使亂數連續相同也不會產生完全相同的相鄰題目', () => {
+  const constantRng = () => 0;
+  for (const mode of ['ink', 'word', 'mixed']) {
+    let previous = null;
+    for (let i = 0; i < 30; i += 1) {
+      const current = Engine.createQuestion(mode, 'hard', constantRng, previous);
+      if (previous) assert.notEqual(Engine.questionKey(current), Engine.questionKey(previous));
+      previous = current;
+    }
+  }
+});
+
 test('答對可得基礎、速度與連擊分；答錯不扣分但連擊歸零', () => {
   const correct = Engine.scoreAnswer({ score: 0, streak: 2, correct: 2, wrong: 0, totalReactionMs: 1000 }, true, 1000, 5000);
   assert.equal(correct.streak, 3);
@@ -63,7 +76,7 @@ test('答對可得基礎、速度與連擊分；答錯不扣分但連擊歸零',
   assert.equal(wrong.wrong, 1);
 });
 
-test('逾時視為答錯且不產生負分', () => {
+test('答錯不產生負分', () => {
   const result = Engine.scoreAnswer({ score: 0, streak: 4, correct: 0, wrong: 0, totalReactionMs: 0 }, false, 5000, 5000);
   assert.equal(result.score, 0);
   assert.equal(result.streak, 0);

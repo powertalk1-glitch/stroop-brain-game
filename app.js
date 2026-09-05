@@ -41,7 +41,7 @@
     const paceLabels = { easy: '舒適節奏', normal: '標準節奏', hard: '疾速節奏' };
     ['easy', 'normal', 'hard'].forEach((difficulty) => {
       const description = document.querySelector(`[data-difficulty="${difficulty}"] small`);
-      if (description) description.textContent = `四色常駐・${paceLabels[difficulty]}`;
+      if (description) description.textContent = `六色常駐・${paceLabels[difficulty]}`;
     });
   }
 
@@ -113,7 +113,7 @@
   function nextQuestion(now = performance.now()) {
     if (!state.playing || state.paused) return;
     const config = E.getRoundConfig(state.profile, state.difficulty);
-    state.current = E.createQuestion(state.mode, state.difficulty);
+    state.current = E.createQuestion(state.mode, state.difficulty, Math.random, state.current);
     state.questionStart = now;
     state.locked = false; state.nextAt = 0;
     const question = state.current;

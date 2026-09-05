@@ -9,13 +9,15 @@
     Object.freeze({ id: 'red', label: '紅', hex: '#e5484d' }),
     Object.freeze({ id: 'yellow', label: '黃', hex: '#f2bd2e' }),
     Object.freeze({ id: 'blue', label: '藍', hex: '#2878ff' }),
-    Object.freeze({ id: 'green', label: '綠', hex: '#159b68' })
+    Object.freeze({ id: 'green', label: '綠', hex: '#159b68' }),
+    Object.freeze({ id: 'orange', label: '橘', hex: '#ef7f2d' }),
+    Object.freeze({ id: 'purple', label: '紫', hex: '#8b5cf6' })
   ]);
 
   const DIFFICULTIES = Object.freeze({
-    easy: Object.freeze({ optionCount: 4, speedReferenceMs: 5000, feedbackMs: 520 }),
-    normal: Object.freeze({ optionCount: 4, speedReferenceMs: 3500, feedbackMs: 360 }),
-    hard: Object.freeze({ optionCount: 4, speedReferenceMs: 2200, feedbackMs: 220 })
+    easy: Object.freeze({ optionCount: 6, speedReferenceMs: 5000, feedbackMs: 520 }),
+    normal: Object.freeze({ optionCount: 6, speedReferenceMs: 3500, feedbackMs: 360 }),
+    hard: Object.freeze({ optionCount: 6, speedReferenceMs: 2200, feedbackMs: 220 })
   });
 
   const SPEED_ADJUSTMENTS = Object.freeze({ adult: 0, child: 1000, senior: 2000 });
@@ -35,7 +37,11 @@
     return Math.min(length - 1, Math.floor(rng() * length));
   }
 
-  function createQuestion(mode, difficulty, rng = Math.random) {
+  function questionKey(question) {
+    return `${question.rule}:${question.word.id}:${question.ink.id}`;
+  }
+
+  function createQuestion(mode, difficulty, rng = Math.random, previousQuestion = null) {
     if (!['ink', 'word', 'mixed'].includes(mode)) throw new Error('未知玩法');
     const config = DIFFICULTIES[difficulty];
     if (!config) throw new Error('未知難度');
@@ -43,7 +49,11 @@
     const rule = mode === 'mixed' ? (rng() < 0.5 ? 'ink' : 'word') : mode;
     const word = COLORS[pickIndex(rng, COLORS.length)];
     const alternatives = COLORS.filter((color) => color.id !== word.id);
-    const ink = alternatives[pickIndex(rng, alternatives.length)];
+    let ink = alternatives[pickIndex(rng, alternatives.length)];
+
+    if (previousQuestion && previousQuestion.rule === rule && previousQuestion.word.id === word.id && previousQuestion.ink.id === ink.id) {
+      ink = alternatives.find((color) => color.id !== previousQuestion.ink.id);
+    }
 
     const answer = rule === 'ink' ? ink.id : word.id;
     const options = COLORS.slice();
@@ -82,5 +92,5 @@
     };
   }
 
-  return Object.freeze({ COLORS, getRoundConfig, createQuestion, scoreAnswer, summarize });
+  return Object.freeze({ COLORS, getRoundConfig, createQuestion, questionKey, scoreAnswer, summarize });
 });
